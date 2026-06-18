@@ -5,7 +5,7 @@ from flwr.app import ArrayRecord, Context
 from flwr.serverapp import Grid, ServerApp
 from flwr.serverapp.strategy import FedAvg
 
-from fedamp.strategy import FedAMP
+from fedamp.utils import get_startegy
 from fedamp.model import Net
 
 import json
@@ -22,21 +22,12 @@ def main(grid: Grid, context: Context) -> None:
     # Read from config
     num_rounds: int = int(context.run_config["num-server-rounds"])
     fraction_train: float = float(context.run_config["fraction-train"])
-
+    
     # Load global model
     global_model = Net()
     arrays = ArrayRecord(global_model.state_dict())
-    alphaK = float(context.run_config['alphaK'])
-    sigma = float(context.run_config['sigma'])
- 
-    # Initialize FedAMP strategy
-    strategy = FedAMP(
-        fraction_train=fraction_train,
-        fraction_evaluate=1.0,
-        min_available_nodes=2,
-        alphaK=alphaK,
-        sigma=sigma
-    )
+
+    strategy = get_startegy(context=context)
 
     # Start strategy, run FedAMP for `num_rounds`
     result = strategy.start(
@@ -58,6 +49,8 @@ def main(grid: Grid, context: Context) -> None:
     eval_accs = [result.evaluate_metrics_clientapp[r]["eval_acc"] for r in eval_rounds]
 
     history = {
+        "algorithm":context.run_config['algorithm'],
+        "label":context.run_config['algorithm'],
         "train_rounds":train_rounds, 
         "train_losses":train_losses, 
         "eval_rounds":eval_rounds, 
@@ -67,7 +60,7 @@ def main(grid: Grid, context: Context) -> None:
 
     os.makedirs(context.run_config['save-dir'], exist_ok=True)
 
-    with open(f"{context.run_config['save-dir']}/{num_rounds}_{fraction_train}.json", "w") as f:
+    with open(f"{context.run_config['save-dir']}/m_{fraction_train}.json", "w") as f:
         json.dump(history, f, indent=4)
  
     return result

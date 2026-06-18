@@ -27,18 +27,18 @@ class Net(nn.Module):
         return self.fc3(x)
 
 
-def train(net, aggregated_net, trainloader, epochs, fedamp_lambda, alphaK, lr, device):
+def train(net, global_net, trainloader, epochs, proximal_weight, lr, device):
     """Train the model on the training set."""
     net.to(device)  # move model to GPU if available
     
-    aggregated_net.to(device)
+    global_net.to(device)
     
     criterion = torch.nn.CrossEntropyLoss()
     criterion.to(device)
     optimizer = torch.optim.SGD(net.parameters(), lr=lr)
 
     # ensure the gradients for aggregated_net are all None
-    for p in aggregated_net.parameters():
+    for p in global_net.parameters():
         p.requires_grad_(False)
 
     net.train()
@@ -51,10 +51,10 @@ def train(net, aggregated_net, trainloader, epochs, fedamp_lambda, alphaK, lr, d
             
             # add proximal term (this is the personalization factor)
             proximal_term = 0.0
-            for local_weights, global_weights in zip(net.parameters(), aggregated_net.parameters()):
+            for local_weights, global_weights in zip(net.parameters(), global_net.parameters()):
                 proximal_term += torch.sum((local_weights - global_weights.detach()) ** 2)
-            
-            loss = criterion(net(images.to(device)), labels.to(device)) + (0.5 * (fedamp_lambda/alphaK) * proximal_term)
+                
+            loss = criterion(net(images.to(device)), labels.to(device)) + (0.5 * proximal_weight * proximal_term)
 
             loss.backward()
             optimizer.step()
