@@ -8,6 +8,10 @@ from flwr.serverapp.strategy import FedAvg
 from fedamp.strategy import FedAMP
 from fedamp.model import Net
 
+import json
+import os
+
+
 # Create ServerApp
 app = ServerApp()
 
@@ -22,12 +26,16 @@ def main(grid: Grid, context: Context) -> None:
     # Load global model
     global_model = Net()
     arrays = ArrayRecord(global_model.state_dict())
-
+    alphaK = float(context.run_config['alphaK'])
+    sigma = float(context.run_config['sigma'])
+ 
     # Initialize FedAMP strategy
     strategy = FedAMP(
         fraction_train=fraction_train,
         fraction_evaluate=1.0,
         min_available_nodes=2,
+        alphaK=alphaK,
+        sigma=sigma
     )
 
     # Start strategy, run FedAMP for `num_rounds`
@@ -41,3 +49,25 @@ def main(grid: Grid, context: Context) -> None:
     print("\nSaving final model to disk...")
     state_dict = result.arrays.to_torch_state_dict()
     torch.save(state_dict, "final_model.pt")
+
+    train_rounds = sorted(result.train_metrics_clientapp.keys())
+    train_losses = [result.train_metrics_clientapp[r]["train_loss"] for r in train_rounds]
+
+    eval_rounds = sorted(result.evaluate_metrics_clientapp.keys())
+    eval_losses = [result.evaluate_metrics_clientapp[r]["eval_loss"] for r in eval_rounds]
+    eval_accs = [result.evaluate_metrics_clientapp[r]["eval_acc"] for r in eval_rounds]
+
+    history = {
+        "train_rounds":train_rounds, 
+        "train_losses":train_losses, 
+        "eval_rounds":eval_rounds, 
+        "eval_accs":eval_accs, 
+        "eval_losses":eval_losses           
+    }
+
+    os.makedirs(context.run_config['save-dir'], exist_ok=True)
+
+    with open(f"{context.run_config['save-dir']}/{num_rounds}_{fraction_train}.json", "w") as f:
+        json.dump(history, f, indent=4)
+ 
+    return result
