@@ -27,12 +27,20 @@ class Net(nn.Module):
         return self.fc3(x)
 
 
-def train(net, trainloader, epochs, device):
+def train(net, aggregated_net, trainloader, epochs, fedamp_lambda, alphaK, lr, device):
     """Train the model on the training set."""
     net.to(device)  # move model to GPU if available
+    
+    aggregated_net.to(device)
+    
     criterion = torch.nn.CrossEntropyLoss()
     criterion.to(device)
-    optimizer = torch.optim.SGD(net.parameters(), lr=0.1, momentum=0.9)
+    optimizer = torch.optim.SGD(net.parameters(), lr=lr)
+
+    # ensure the gradients for aggregated_net are all None
+    for p in aggregated_net.parameters():
+        p.requires_grad_(False)
+
     net.train()
     running_loss = 0.0
     for _ in range(epochs):
@@ -40,12 +48,19 @@ def train(net, trainloader, epochs, device):
             images = batch["img"]
             labels = batch["label"]
             optimizer.zero_grad()
-            loss = criterion(net(images.to(device)), labels.to(device))
+            
+            # add proximal term (this is the personalization factor)
+            proximal_term = 0.0
+            for local_weights, global_weights in zip(net.parameters(), aggregated_net.parameters()):
+                proximal_term += torch.sum((local_weights - global_weights.detach()) ** 2)
+            
+            loss = criterion(net(images.to(device)), labels.to(device)) + (0.5 * (fedamp_lambda/alphaK) * proximal_term)
+
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
 
-    avg_trainloss = running_loss / len(trainloader)
+    avg_trainloss = running_loss / (len(trainloader)*epochs)  # divide by total number of steps
     return avg_trainloss
 
 
@@ -54,6 +69,7 @@ def test(net, testloader, device):
     net.to(device)
     criterion = torch.nn.CrossEntropyLoss()
     correct, loss = 0, 0.0
+    net.eval()
     with torch.no_grad():
         for batch in testloader:
             images = batch["img"].to(device)

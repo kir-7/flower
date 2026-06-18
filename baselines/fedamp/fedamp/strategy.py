@@ -11,13 +11,14 @@ from flwr.app import (
     MetricRecord,
     RecordDict,
 )
-from flwr.common import log
+from flwr.common import log, Array
 
 from flwr.serverapp import Grid
 from flwr.serverapp.strategy import FedAvg
 from flwr.serverapp.strategy.strategy_utils import sample_nodes
-    
 
+import numpy as np    
+import math
 import copy
 from typing import Dict, Set, Tuple
 
@@ -30,6 +31,8 @@ class FedAMP(FedAvg):
         min_train_nodes: int = 2,
         min_evaluate_nodes: int = 2,
         min_available_nodes: int = 2,
+        alphaK: float = 1,
+        sigma: float = 1,
         weighted_by_key: str = "num-examples",
         arrayrecord_key: str = "arrays",
         configrecord_key: str = "config",
@@ -56,6 +59,8 @@ class FedAMP(FedAvg):
         )
 
         self.aggregatedrecord_key = aggregatedrecord_key
+        self.alphaK = alphaK  # these values are defined in pyproject.toml file, and are passes via run_config
+        self.sigma = sigma
         
         # store the initial arrays
         self.initial_arrays: ArrayRecord|None = None
@@ -107,22 +112,21 @@ class FedAMP(FedAvg):
         # for all these node_ids get their latest model, if not exist then replace with the initial model
         curr_round_client_arrays: Dict[str, ArrayRecord] = {}
         for node_id in node_ids:
-            if node_id in self.client_ids: curr_round_client_arrays[node_id] = self.client_arrays[node_id]
-            else: curr_round_client_arrays[node_id] = self.initial_arrays  # we will sent this in self.client_weights in aggregate_fn
+            # For clients that do not yet exist, we will set the self.client_weights[node_id] in aggregate_fn
+            curr_round_client_arrays[node_id] = self.client_arrays.get(node_id, self.initial_arrays) 
 
         # for FedAMP: other than personalized client model, we want to send the partial aggregated model `mu` 
         # and the self weight (coef_self) which will be used to aggregate on client side
-        partial_aggregated_arrays, coef_self = self._compute_aggregated_arrays(curr_round_client_arrays)  # this uses the curr_round_client_arrays, self.prev_round_clients to calculate sim weights
+        partial_aggregated_arrays = self._compute_aggregated_arrays(curr_round_client_arrays)  # this uses the curr_round_client_arrays, self.prev_round_clients to calculate sim weights
 
-        # share the coef_self: Float via config
-        config['coef_self'] = coef_self
-
+        config["coef_self"] = partial_aggregated_arrays[node_id][1]  # 1st index is the coef_self
+        
         # Construct messages
         records: Dict[str, RecordDict] = {node_id: RecordDict({
             self.arrayrecord_key: curr_round_client_arrays[node_id], 
-            self.aggregatedrecord_key:partial_aggregated_arrays[node_id], 
+            self.aggregatedrecord_key: partial_aggregated_arrays[node_id][0],  # 0th index is the array records 
             self.configrecord_key: config                                                               
-        }) for node_id in node_ids} 
+        }) for node_id in node_ids}
         
         return self._construct_messages(records, node_ids, MessageType.TRAIN)
 
@@ -147,7 +151,8 @@ class FedAMP(FedAvg):
             for msg in replies:
                 self.client_arrays[msg.metadata.src_node_id] = msg.content.array_records[self.arrayrecord_key] 
                 if msg.metadata.src_node_id not in self.client_ids: self.client_ids.add(msg.metadata.src_node_id)
-                self.prev_round_clients.add(msg.metadata.src_node_id)            
+                self.prev_round_clients.add(msg.metadata.src_node_id)  
+                          
 
             # Aggregate MetricRecords as usual
             metrics = self.train_metrics_aggr_fn(
@@ -206,10 +211,58 @@ class FedAMP(FedAvg):
             )
         return metrics
     
-    def _compute_aggregated_arrays(self, curr_round_client_arrays: Dict[str, ArrayRecord]) -> Tuple[Dict[str, ArrayRecord], float]:
+    def _compute_aggregated_arrays(self, curr_round_client_arrays: Dict[str, ArrayRecord]) -> Tuple[Dict[str, Tuple[ArrayRecord, float]]]:
         # use the curr_round_model_arrays, prev_round_clients to calculate the sims
         # return the partial_aggregated_arrays, and coef_sim
-        raise NotImplementedError("Not yet implemented")
+        
+        partial_aggregated_arrays: Dict[str, Tuple[ArrayRecord, float]] = {}
+        n_selected = len(curr_round_client_arrays)
+
+        if len(self.prev_round_clients) > 0:
+            for client_id, client_arrays in curr_round_client_arrays.items():
+
+                mu_np = {}
+                for key, value in self.initial_arrays.items():
+                    mu_np[key] = np.zeros_like(np.array(value.numpy()))  # clear the aggregate
+
+                coef = np.zeros(n_selected)  # this should be number of selected clients
+                for j, prev_client_id in enumerate(self.prev_round_clients):
+                    prev_client_arrays = self.client_arrays[prev_client_id]  # this will always exist as, if the client was selected in prev round then it would have been added to the clients set
+                    if client_id != prev_client_id:
+                        weights_i = np.concatenate([p.numpy().flatten() for p in client_arrays.values()], axis=0)
+                        weights_j = np.concatenate([p.numpy().flatten() for p in prev_client_arrays.values()], axis=0)
+                        sub = (weights_i - weights_j).reshape(-1)
+                        sub = np.dot(sub, sub)
+                        coef[j] = self.alphaK * self.exp_sim(sub, self.sigma)
+                    else:
+                        coef[j] = 0
+                
+                coef_self = 1 - np.sum(coef)
+                
+                for j, prev_client_id in enumerate(self.prev_round_clients):
+                    prev_client_arrays = self.client_arrays.get(prev_client_id, self.initial_arrays) 
+                    for key in mu_np.keys():
+                        # FIX: Use .numpy()
+                        mu_np[key] += coef[j] * prev_client_arrays[key].numpy()
+                
+                mu_record = ArrayRecord({k: Array(v) for k, v in mu_np.items()})
+                partial_aggregated_arrays[client_id] = (mu_record, coef_self)
+        else:
+            # For first round no personalization, complete local training...
+            for client_id in curr_round_client_arrays.keys():
+                mu_np = {}
+                for key, value in self.initial_arrays.items():
+                    mu_np[key] = np.zeros_like(value.numpy())
+ 
+                mu_record = ArrayRecord({k: Array(v) for k, v in mu_np.items()})
+                partial_aggregated_arrays[client_id] = (mu_record, 1.0)
+
+        return partial_aggregated_arrays
+
+    @staticmethod
+    def exp_sim(x, sigma):
+        return math.exp(-x/sigma)/sigma
+
 
     def start(
             self, 

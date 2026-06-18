@@ -25,10 +25,10 @@ def train(msg: Message, context: Context):
     arrays = msg.content.array_records["arrays"]
 
     # for FedAMP: we also recieve the aggregated weights and coef_self; the aggregatedrecords_key is `mu`
-    partial_aggregated_arrays: ArrayRecord = msg.content.array_records['mu']
-    coef_self: float = msg.content.array_records['coef_self'] 
+    aggregated_arrays: ArrayRecord = msg.content.array_records['mu']
+    coef_self: float = msg.content.config_records['config']['coef_self'] 
 
-    aggregated_arrays: ArrayRecord = combine_aggregated_arrays(partial_aggregated_arrays, arrays, coef_self)
+    aggregated_arrays: ArrayRecord = combine_aggregated_arrays(aggregated_arrays, arrays, coef_self)  # this will change the aggregated_arrays record inplace
     aggregated_model.load_state_dict(aggregated_arrays.to_torch_state_dict())
     model.load_state_dict(arrays.to_torch_state_dict())
         
@@ -37,16 +37,25 @@ def train(msg: Message, context: Context):
     # Load the data
     partition_id = int(context.node_config["partition-id"])
     num_partitions = int(context.node_config["num-partitions"])
-    trainloader, _ = load_data(partition_id, num_partitions)
-    local_epochs = context.run_config["local-epochs"]
+    partition_by: str = context.run_config['partition-by']
+    num_classes_per_partition: int = int(context.run_config['num-classes-per-partition'])
 
+    trainloader, _ = load_data(num_classes_per_partition, partition_by, partition_id, num_partitions)
+    local_epochs = context.run_config["local-epochs"]
+    alphaK = float(context.run_config['alphaK'])
+    fedamp_lambda = float(context.run_config['fedamp-lambda'])
+    lr = float(context.run_config['lr'])
+    
     # Call the training function: use aggregated_model for the regularization term.
     train_loss = train_fn(
-        model,
-        aggregated_model,
-        trainloader,
-        local_epochs,
-        device,
+        net=model,
+        aggregated_net=aggregated_model,
+        trainloader=trainloader,
+        epochs=local_epochs,
+        fedamp_lambda=fedamp_lambda,
+        alphaK=alphaK,
+        lr=lr,
+        device=device,
     )
 
     # Construct and return reply Message
@@ -72,7 +81,10 @@ def evaluate(msg: Message, context: Context):
     # Load the data
     partition_id = int(context.node_config["partition-id"])
     num_partitions = int(context.node_config["num-partitions"])
-    _, valloader = load_data(partition_id, num_partitions)
+    partition_by: str = context.run_config.get('partition-by', "label")
+    num_classes_per_partition: int = int(context.run_config.get('num-classes-per-partition', 3))
+
+    _, valloader = load_data(num_classes_per_partition, partition_by, partition_id, num_partitions)
 
     # Call the evaluation function
     eval_loss, eval_acc = test_fn(model, valloader, device)
