@@ -27,6 +27,9 @@ def main(grid: Grid, context: Context) -> None:
     global_model = Net()
     arrays = ArrayRecord(global_model.state_dict())
 
+    run_configurations = '\n'.join(f"{k}: {v}" for k, v in context.run_config.items())
+    print(f"Run Configuration:\n{run_configurations}")
+
     strategy = get_startegy(context=context)
 
     # Start strategy, run FedAMP for `num_rounds`
@@ -60,7 +63,7 @@ def main(grid: Grid, context: Context) -> None:
 
     os.makedirs(context.run_config['save-dir'], exist_ok=True)
 
-    with open(f"{context.run_config['save-dir']}/m_{fraction_train}.json", "w") as f:
+    with open(f"{context.run_config['save-dir']}/{context.run_config['algorithm']}_m_{fraction_train}.json", "w") as f:
         json.dump(history, f, indent=4)
  
     return result

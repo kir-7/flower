@@ -29,8 +29,10 @@ def train(msg: Message, context: Context):
     num_partitions = int(context.node_config["num-partitions"])
     partition_by: str = context.run_config['partition-by']
     num_classes_per_partition: int = int(context.run_config['num-classes-per-partition'])
+    batch_size: int = int(context.run_config['batch-size'])
 
-    trainloader, _ = load_data(num_classes_per_partition, partition_by, partition_id, num_partitions)
+    trainloader, _ = load_data(num_classes_per_partition, partition_by, partition_id, num_partitions, batch_size)
+    
     local_epochs = context.run_config["local-epochs"]
     lr = float(context.run_config['lr'])
     algorithm = context.run_config['algorithm']

@@ -84,7 +84,7 @@ def plot_history(history: dict, save_fig_path: str = "fedamp_plot.png"):
     plt.show()
 
 
-def compare_histories(histories, save_fig_path="comparison.png"):
+def compare_histories(histories, configuration="", save_fig_path="comparison.png"):
 
     fig, axs = plt.subplots(1, 3, figsize=(18, 5))
 
@@ -112,6 +112,7 @@ def compare_histories(histories, save_fig_path="comparison.png"):
     axs[2].grid(True, linestyle="--", alpha=0.7)
     axs[2].legend()
 
+    plt.suptitle(configuration, fontsize=16, fontweight='bold')
     plt.tight_layout()
 
     if save_fig_path:

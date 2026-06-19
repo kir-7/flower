@@ -131,15 +131,20 @@ clientapp = "fedamp.client_app:app"
 
 # Custom config values accessible via `context.run_config`
 [tool.flwr.app.config]
-num-server-rounds = 3
-fraction-train = 0.5
-local-epochs = 1
+algorithm = 'fedamp'
+num-server-rounds = 60
+fraction-train = 0.2
+batch-size = 128
+local-epochs = 4
 alphaK = 1.0
 sigma = 1.0
 fedamp-lambda = 1.0
 partition-by = 'label'
 num-classes-per-partition = 3
 save-dir = "fedamp_results/"
+proximal_mu = 0.1
+lr = 0.01
+
 
 # Default federation to use when running the app
 [tool.flwr.federations]
@@ -147,7 +152,7 @@ default = "local-simulation"
 
 # Local simulation federation with 10 virtual SuperNodes
 [tool.flwr.federations.local-simulation]
-options.num-supernodes = 10
+options.num-supernodes = 40
 options.backend.client-resources.num-cpus = 2
 options.backend.client-resources.num-gpus = 0.2
 

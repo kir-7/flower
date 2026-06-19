@@ -1,0 +1,13 @@
+algorithm = "fedamp"
+
+fraction-fit = 0.5
+
+local-epochs = 4
+lr = 0.01
+batch-size = 32
+
+alpha = 0.1
+sigma = 1.0
+fedamp_lambda = 1.0
+
+save-dir = "fedamp_results/"

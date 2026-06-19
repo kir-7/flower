@@ -8,7 +8,7 @@ from torchvision.transforms import Compose, Normalize, ToTensor
 FDS = None  # Cache FederatedDataset
 
 
-def load_data(num_classes_per_partition:int, partition_by:str, partition_id: int, num_partitions: int):
+def load_data(num_classes_per_partition:int, partition_by:str, partition_id: int, num_partitions: int, batch_size=128):
     """Load partition CIFAR10 data."""
     # Only initialize `FederatedDataset` once
     global FDS  # pylint: disable=global-statement
@@ -31,6 +31,6 @@ def load_data(num_classes_per_partition:int, partition_by:str, partition_id: int
         return batch
 
     partition_train_test = partition_train_test.with_transform(apply_transforms)
-    trainloader = DataLoader(partition_train_test["train"], batch_size=32, shuffle=True)
-    testloader = DataLoader(partition_train_test["test"], batch_size=32)
+    trainloader = DataLoader(partition_train_test["train"], batch_size=batch_size, shuffle=True)
+    testloader = DataLoader(partition_train_test["test"], batch_size=batch_size)
     return trainloader, testloader
