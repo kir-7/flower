@@ -1,0 +1,18 @@
+num-server-rounds = 100
+algorithm = "fedprox"
+
+fraction-fit = 0.4
+fraction-evaluate = 1.0
+
+partition-by = 'label'
+num-classes-per-partition = 3
+
+local-epochs = 4
+learning-rate = 0.01
+batch-size = 32
+
+num-clients = 40
+
+proximal_mu = 0.01
+
+save-dir = "fedprox_results/"
