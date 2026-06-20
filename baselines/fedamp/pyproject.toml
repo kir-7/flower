@@ -10,7 +10,7 @@ build-backend = "hatchling.build"
 [project]
 name = "FedAMP"
 version = "1.0.0"
-description = "Base app to create a Flower "
+description = "FedAMP: Personalized Cross-Silo Federated Learning on Non-IID Data"
 license = "Apache-2.0"
 # Dependencies for your Flower App
 dependencies = [

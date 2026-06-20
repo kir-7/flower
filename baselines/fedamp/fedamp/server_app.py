@@ -1,16 +1,14 @@
 """FedAMP: Personalized Cross-Silo Federated Learning on Non-IID Data."""
 
-import torch
-from flwr.app import ArrayRecord, Context
-from flwr.serverapp import Grid, ServerApp
-from flwr.serverapp.strategy import FedAvg
-
-from fedamp.utils import get_startegy
-from fedamp.model import Net
-
 import json
 import os
 
+import torch
+from flwr.app import ArrayRecord, Context
+from flwr.serverapp import Grid, ServerApp
+
+from fedamp.model import Net
+from fedamp.utils import get_startegy
 
 # Create ServerApp
 app = ServerApp()
@@ -22,12 +20,12 @@ def main(grid: Grid, context: Context) -> None:
     # Read from config
     num_rounds: int = int(context.run_config["num-server-rounds"])
     fraction_train: float = float(context.run_config["fraction-train"])
-    
+
     # Load global model
     global_model = Net()
     arrays = ArrayRecord(global_model.state_dict())
 
-    run_configurations = '\n'.join(f"{k}: {v}" for k, v in context.run_config.items())
+    run_configurations = "\n".join(f"{k}: {v}" for k, v in context.run_config.items())
     print(f"Run Configuration:\n{run_configurations}")
 
     strategy = get_startegy(context=context)
@@ -45,25 +43,32 @@ def main(grid: Grid, context: Context) -> None:
     torch.save(state_dict, "final_model.pt")
 
     train_rounds = sorted(result.train_metrics_clientapp.keys())
-    train_losses = [result.train_metrics_clientapp[r]["train_loss"] for r in train_rounds]
+    train_losses = [
+        result.train_metrics_clientapp[r]["train_loss"] for r in train_rounds
+    ]
 
     eval_rounds = sorted(result.evaluate_metrics_clientapp.keys())
-    eval_losses = [result.evaluate_metrics_clientapp[r]["eval_loss"] for r in eval_rounds]
+    eval_losses = [
+        result.evaluate_metrics_clientapp[r]["eval_loss"] for r in eval_rounds
+    ]
     eval_accs = [result.evaluate_metrics_clientapp[r]["eval_acc"] for r in eval_rounds]
 
     history = {
-        "algorithm":context.run_config['algorithm'],
-        "label":context.run_config['algorithm'],
-        "train_rounds":train_rounds, 
-        "train_losses":train_losses, 
-        "eval_rounds":eval_rounds, 
-        "eval_accs":eval_accs, 
-        "eval_losses":eval_losses           
+        "algorithm": context.run_config["algorithm"],
+        "label": context.run_config["algorithm"],
+        "train_rounds": train_rounds,
+        "train_losses": train_losses,
+        "eval_rounds": eval_rounds,
+        "eval_accs": eval_accs,
+        "eval_losses": eval_losses,
     }
 
-    os.makedirs(context.run_config['save-dir'], exist_ok=True)
+    os.makedirs(context.run_config["save-dir"], exist_ok=True)
 
-    with open(f"{context.run_config['save-dir']}/{context.run_config['algorithm']}_m_{fraction_train}.json", "w") as f:
+    with open(
+        f"{context.run_config['save-dir']}/{context.run_config['algorithm']}_m_{fraction_train}.json",
+        "w",
+    ) as f:
         json.dump(history, f, indent=4)
- 
+
     return result

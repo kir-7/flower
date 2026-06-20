@@ -1,127 +1,162 @@
 ---
-title: title of the paper # TODO
-url: https://arxiv.org/abs/2007.14390 # TODO: update with the link to your paper
-labels: [label1, label2] # TODO: please add between 4 and 10 single-word (maybe two-words) labels (e.g. system heterogeneity, image classification, asynchronous, weight sharing, cross-silo). Do not use "". Remove this comment once you are done.
-dataset: [dataset1, dataset2] # TODO: list of datasets you include in your baseline. Do not use "". Remove this comment once you are done.
+title: Personalized Cross-Silo Federated Learning on Non-IID Data
+url: https://arxiv.org/abs/2007.03797 
+labels: [data heterogeneity, personalization, image classification] 
+dataset: [cifar10]
 ---
 
-> [!IMPORTANT]
-> This is the template for your `README.md`. Please fill-in the information in all areas with a :warning: symbol.
-> Please refer to the [Flower Baselines contribution](https://flower.ai/docs/baselines/how-to-contribute-baselines.html) and [Flower Baselines usage](https://flower.ai/docs/baselines/how-to-use-baselines.html) guides for more details.
-> Please complete the metadata section at the very top of this README. This generates a table at the top of the file that will facilitate indexing baselines.
-> Please remove this [!IMPORTANT] block once you are done with your `README.md` as well as all the `:warning:` symbols and the comments next to them.
 
-> [!IMPORTANT]
-> To help having all baselines similarly formatted and structured, we have included two scripts in `baselines/dev` that when run will format your code and run some tests checking if it's formatted.
-> These checks use standard packages such as `isort`, `black`, `pylint` and others. You as a baseline creator will need to install additional packages. These are already specified in the `pyproject.toml` of
-> your baseline. Follow these steps:
-
-```bash
-# Create a python env
-pyenv virtualenv 3.12.12 baseline
-
-# Activate it
-pyenv activate baseline
-
-# Install project including developer packages
-# Note the `-e` this means you install it in editable mode 
-# so even if you change the code you don't need to do `pip install`
-# again. However, if you add a new dependency to `pyproject.toml` you
-# will need to re-run the command below
-pip install -e ".[dev]"
-
-# Even without modifying or adding new code, you can run your baseline
-# with the placeholder code generated when you did `flwr new`. If you
-# want to test this to familiarise yourself with how flower apps are
-# executed, execute this from the directory where you `pyproject.toml` is:
-flwr run .
-
-# At anypoint during the process of creating your baseline you can 
-# run the formatting script. For this do:
-cd .. # so you are in the `flower/baselines` directory
-
-# Run the formatting script (it will auto-correct issues if possible)
-./dev/format-baseline.sh baseline
-
-# Then, if the above is all good, run the tests.
-./dev/test-baseline.sh baseline
-```
-
-> [!IMPORTANT]
-> When you open a PR to get the baseline merged into the main Flower repository, the `./dev/test-baseline.sh` script will run. Only if test pass, the baseline can be merged. 
-> Some issues highlighted by the tests script are easier than others to fix. Do not hesitate in reaching out for help to us (e.g. as a comment in your PR) if you are stuck with these.
-> Before opening your PR, please remove the code snippet above as well all the [!IMPORTANT] message blocks. Yes, including this one.
-
-# :warning: *_Title of your baseline_* # Also copy this title to the `description` in the `[project]` section of your `pyproject.toml`.
+# FedAMP: Personalized Cross-Silo Federated Learning on Non-IID Data.
 
 > [!NOTE] 
 > If you use this baseline in your work, please remember to cite the original authors of the paper as well as the Flower paper.
 
-**Paper:** :warning: *_add the URL of the paper page (not to the .pdf). For instance if you link a paper on ArXiv, add here the URL to the abstract page (e.g. [paper](https://arxiv.org/abs/1512.03385)). If your paper is in from a journal or conference proceedings, please follow the same logic._*
+**Paper:** : [https://arxiv.org/abs/2007.03797](https://arxiv.org/abs/2007.03797)
 
-**Authors:** :warning: *_list authors of the paper_*
+**Authors:** : Yutao Huang, Lingyang Chu, Zirui Zhou, Lanjun Wang, Jiangchuan Liu, Jian Pei, Yong Zhang
 
-**Abstract:** :warning: *_add here the abstract of the paper you are implementing_*
+**Abstract:** : Non-IID data present a tough challenge for federated learning. In this paper, we explore a novel idea of facilitating pairwise collaborations between clients with similar data. We propose FedAMP, a new method employing federated attentive message passing to facilitate similar clients to collaborate more. We establish the convergence of FedAMP for both convex and non-convex models, and propose a heuristic method to further improve the performance of FedAMP when clients adopt deep neural networks as personalized models. Our extensive experiments on benchmark data sets demonstrate the superior performance of the proposed methods.
 
 
 ## About this baseline
 
-**What’s implemented:** :warning: *_Concisely describe what experiment(s) (e.g. Figure 1, Table 2, etc.) in the publication can be replicated by running the code. Please only use a few sentences. ”_*
+**What’s implemented:** : The code in this directory implements the algorithm in *Personalized Cross-Silo Federated Learning on Non-IID Data* (Huang et al., 2021) for CIFAR-10 dataset under pathological sampling. It evaluates the performance under fraction-train of 0.2 and 0.5 against FedAvg and FedProx. 
 
-**Datasets:** :warning: *_List the datasets you used (if you used a medium to large dataset, >10GB please also include the sizes of the dataset). We highly recommend using [FlowerDatasets](https://flower.ai/docs/datasets/index.html) to download and partition your dataset. If you have other ways to download the data, you can also use `FlowerDatasets` to partition it._*
+**Datasets:** : CIFAR-10
 
-**Hardware Setup:** :warning: *_Give some details about the hardware (e.g. a server with 8x V100 32GB and 256GB of RAM) you used to run the experiments for this baseline. Indicate how long it took to run the experiments. Someone out there might not have access to the same resources you have so, could you list the absolute minimum hardware needed to run the experiment in a reasonable amount of time ? (e.g. minimum is 1x 16GB GPU otherwise a client model can’t be trained with a sufficiently large batch size). Could you test this works too?_*
+**Hardware Setup:** : These experiments were run on a Tesla T4 GPU with 16 GB VRAM provided through Google colab session with GPU enabled. The total time for a single experiment with 20% pariticpation is ~20 minutes and 50% participation is ~40 minutes. 
 
-**Contributors:** :warning: *_let the world know who contributed to this baseline. This could be either your name, your name and affiliation at the time, or your GitHub profile name if you prefer. If multiple contributors signed up for this baseline, please list yourself and your colleagues_*
-
+**Contributors:** : [Kireeti](kir-7)
 
 ## Experimental Setup
 
-**Task:** :warning: *_what’s the primary task that is being federated? (e.g. image classification, next-word prediction). If you have experiments for several, please list them_*
+**Task:** : Image classification
 
-**Model:** :warning: *_provide details about the model you used in your experiments (if more than use a list). If your model is small, describing it as a table would be :100:. Some FL methods do not use an off-the-shelve model (e.g. ResNet18) instead they create your own. If this is your case, please provide a summary here and give pointers to where in the paper (e.g. Appendix B.4) is detailed._*
+**Model:** : The default CNN model is used for all experiments (see `model.py   `).
 
-**Dataset:** :warning: *_Earlier you listed already the datasets that your baseline uses. Now you should include a breakdown of the details about each of them. Please include information about: how the dataset is partitioned (e.g. LDA with alpha 0.1 as default and all clients have the same number of training examples; or each client gets assigned a different number of samples following a power-law distribution with each client only instances of 2 classes)? if  your dataset is naturally partitioned just state “naturally partitioned”; how many partitions there are (i.e. how many clients)? Please include this an all information relevant about the dataset and its partitioning into a table._*
+**Dataset:** : This baseline includes CIFAR-10 dataset. It will be partitioned into 40 clients following a pathological split where each client has examples of three (out of ten) class labels. The settings are as follows:
 
-**Training Hyperparameters:** :warning: *_Include a table with all the main hyperparameters in your baseline. Please show them with their default value._*
+| Dataset | #classes | #rounds | #partitions |     partitioning method     |  partition settings  |
+| :------ | :------: | :-----: | :---------: | :-------------------------: | :------------------: |
+| CIFAR-10   |    10    |   60   |    40    | pathological | 3 classes per client |
+
+**Training Hyperparameters:**
+The following table shows the main hyperparameters for this baseline with their default value (i.e. the value used if you run `flwr run .` directly)
+
+| Description         | Default Value                                      | Note |
+| ------------------- | -------------------------------------------------- |-------
+| total clients       | 40                                                 | Since the algorithm is cross-silo algorithm.
+| clients per round   | 8                                                   | This is set using fraction-train default=0.2
+| number of rounds    | 60                                                | --
+| client resources    | {'num_cpus': 2.0, 'num_gpus': 0.2}                | By default GPU is used, if CPU-only experiments, then set 'num-gpus'=0.0
+| data partition      | pathological sampling (3 classes per client) | 
+| optimizer           | SGD with proximal term                             |
+| proximal mu         | 0.6                                                | Used for comparison experiment against FedProx
+| fedamp_lambda | 1.0                                                | Used in combination with alphaK for the proximal weight
+| sigma | 1.0                                                |  Used to calculate the cosine similarity (see `strategy.py` line `304`)
+| alphaK | 1.0                                                | Used in combination with fedamp_lambda for the proximal weight
+
+**Configurations:**
+
+The following table shows the configurations to be set in `pyproject.toml` for different experiments
+
+|  config.algorithm  | config.fraction-train |   config.num-server-rounds | options.num-supernodes |
+| :--------------------: | :------------------------------: | :----------------------: | :--------------------: |
+|   `fedamp`   |                0.2/0.5                |            60           |          40          |
+| `fedavg` |                0.2/0.5                |            60           |          40       |
+| `fedprox` |                0.2/0.5                |            60           |          40          |
 
 
 ## Environment Setup
 
-:warning: _Specify the steps to create and activate your environment and install the baseline project. Most baselines are expected to require minimal steps as shown below. These instructions should be comprehensive enough so anyone can run them (if non standard, describe them step-by-step)._
 
-:warning: _The dependencies for your baseline are listed in the `pyproject.toml`, extend it with additional packages needed for your baseline._
-
-:warning: _Baselines should use Python 3.12, [pyenv](https://github.com/pyenv/pyenv), and the [virtualenv](https://github.com/pyenv/pyenv-virtualenv) plugging. 
+## Environment Setup
 
 ```bash
 # Create the virtual environment
-pyenv virtualenv 3.12.12 <name-of-your-baseline-env>
+pyenv virtualenv 3.12.12 fedamp
 
 # Activate it
-pyenv activate <name-of-your-baseline-env>
+pyenv activate fedamp
 
 # Install the baseline
 pip install -e .
 ```
 
-:warning: _If your baseline requires running some script before starting an experiment, please indicate so here_.
+## Running the Experiments
+
+To run this FedProx, first ensure you have activated your environment as above, then:
+
+```bash
+flwr run .  # this will run using the default settings in the `pyproject.toml`
+
+# you can override settings directly from the command line
+flwr run . --run-config "algorithm.mu=2 dataset.mu=2 algorithm.num_server_rounds=200" # will set proximal mu to 2 and the number of rounds to 200
+
+# if you run this baseline with a larger model, you might want to use the GPU (not used by default).
+# you can enable this by overriding the federation config. For example
+# the below will run the server model on the GPU and 4 clients will be allowed to run concurrently on a GPU (assuming you also meet the CPU criteria for clients)
+flwr run . gpu-simulation
+```
+
+To run using FedAvg:
+
+```bash
+# this will use a variation of FedAvg that drops the clients that were flagged as stragglers
+# This is done so to match the experimental setup in the FedProx paper
+flwr run . --run-config conf/mnist/fedavg_sf_0.9.toml  # MNIST dataset
+flwr run . --run-config conf/femnist/fedavg_sf_0.9.toml  # FEMNIST dataset
+```
+
 
 ## Running the Experiments
 
-:warning: _Make sure you have adjusted the `client-resources` in the federation in `pyproject.toml` so your simulation makes the best use of the system resources available._
 
-:warning: _Your baseline implementation should replicate several of the experiments in the original paper. Please include here the exact command(s) needed to run each of those experiments followed by a figure (e.g. a line plot) or table showing the results you obtained when you ran the code. Below is an example of how you can present this. Please add command followed by results for all your experiments._
 
-:warning: _You might want to add more hyperparameters and settings for your baseline. You can do so by extending `[tool.flwr.app.config]` in `pyproject.toml`. In addition, you can create a new `.toml` file that can be passed with the `--run-config` command (see below an example) to override several config values **already present** in `pyproject.toml`._
 ```bash
-# it is likely that for one experiment you need to override some arguments.
-flwr run . --run-config learning-rate=0.1,coefficient=0.123
+# command to run FedAvg experiment with 50% participation.
+flwr run . --run-config "algorithm='fedavg' fraction-train=0.5 batch-size=32 lr=0.01 proximal_mu=0.0 save-dir='fedavg_results/'" --stream
 
-# or you might want to load different `.toml` configs all together:
-flwr run . --run-config <my-big-experiment-config>.toml
+# command to run FedAvg experiment with 20% participation.
+flwr run . --run-config "algorithm='fedavg' fraction-train=0.2 batch-size=32 lr=0.01 proximal_mu=0.0 save-dir='fedavg_results/'" --stream
+
+
+# command to run FedAMP experiment with 50% participation.
+flwr run . --run-config "algorithm='fedamp' fraction-train=0.5 lr=0.01 batch-size=32 alphaK=1.0 fedamp-lambda=1.0 sigma=1.0 save-dir='fedamp_results/'" --stream
+
+# command to run FedAMP experiment with 20% participation.
+flwr run . --run-config "algorithm='fedamp' fraction-train=0.2 lr=0.01 batch-size=32 alphaK=1.0 fedamp-lambda=1.0 sigma=1.0 save-dir='fedamp_results/'" --stream
+
+
+# command to run FedProx experiment with 50% participation.
+flwr run . --run-config "algorithm='fedprox' fraction-train=0.2 lr=0.01 batch-size=32 proximal_mu=0.6 save-dir='fedprox_results/'" --stream
+
+# command to run FedProx experiment with 20% participation.
+flwr run . --run-config "algorithm='fedprox' fraction-train=0.2 lr=0.01 batch-size=32 proximal_mu=0.6 save-dir='fedprox_results/'" --stream
+
+
 ```
 
-:warning: _It is preferable to show a single command (or multiple commands if they belong to the same experiment) and then a table/plot with the expected results, instead of showing all the commands first and then all the results/plots._
-:warning: _If you present plots or other figures, please include either a Jupyter notebook showing how to create them or include a utility function that can be called after the experiments finish running._
-:warning: If you include plots or figures, save them in `.png` format and place them in a new directory named `_static` at the same level as your `README.md`.
+## Expected results
+
+After running the above commands, the results should be stored in respective folder (`fedavg_results` / `fedprox_results` / `fedamp_results`) in json format containing training history. These are plotted using utility functions provided in `utils.py`. The plots that would be generated are shown below.
+
+Results for comparison of all three algorithms for fraction-train = 0.2:
+
+![](_static/frac_train_0_2.png)
+
+Results for comparison of all three algorithms for fraction-train = 0.5:
+
+![](_static/frac_train_0_5.png)
+
+Results for FedAMP comparison on fraction-train:
+
+![](_static/fedamp_frac_comp.png)
+
+Results for FedAvg comparison on fraction-train:
+
+![](_static/fedavg_frac_comp.png)
+
+Results for FedProx comparison on fraction-train:
+
+![](_static/fedprox_frac_comp.png)

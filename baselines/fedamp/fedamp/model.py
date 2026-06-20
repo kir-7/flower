@@ -30,9 +30,9 @@ class Net(nn.Module):
 def train(net, global_net, trainloader, epochs, proximal_weight, lr, device):
     """Train the model on the training set."""
     net.to(device)  # move model to GPU if available
-    
+
     global_net.to(device)
-    
+
     criterion = torch.nn.CrossEntropyLoss()
     criterion.to(device)
     optimizer = torch.optim.SGD(net.parameters(), lr=lr)
@@ -48,19 +48,27 @@ def train(net, global_net, trainloader, epochs, proximal_weight, lr, device):
             images = batch["img"]
             labels = batch["label"]
             optimizer.zero_grad()
-            
+
             # add proximal term (this is the personalization factor)
             proximal_term = 0.0
-            for local_weights, global_weights in zip(net.parameters(), global_net.parameters()):
-                proximal_term += torch.sum((local_weights - global_weights.detach()) ** 2)
-                
-            loss = criterion(net(images.to(device)), labels.to(device)) + (0.5 * proximal_weight * proximal_term)
+            for local_weights, global_weights in zip(
+                net.parameters(), global_net.parameters(), strict=True
+            ):
+                proximal_term += torch.sum(
+                    (local_weights - global_weights.detach()) ** 2
+                )
+
+            loss = criterion(net(images.to(device)), labels.to(device)) + (
+                0.5 * proximal_weight * proximal_term
+            )
 
             loss.backward()
             optimizer.step()
             running_loss += loss.item()
 
-    avg_trainloss = running_loss / (len(trainloader)*epochs)  # divide by total number of steps
+    avg_trainloss = running_loss / (
+        len(trainloader) * epochs
+    )  # divide by total number of steps
     return avg_trainloss
 
 
