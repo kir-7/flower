@@ -22,19 +22,19 @@ dataset: [cifar10]
 
 **What’s implemented:** : The code in this directory implements the algorithm in *Personalized Cross-Silo Federated Learning on Non-IID Data* (Huang et al., 2021) for CIFAR-10 dataset under pathological sampling. It evaluates the performance under fraction-train of 0.2 and 0.5 against FedAvg and FedProx. 
 
-**Datasets:** : CIFAR-10
+**Datasets:** CIFAR-10
 
-**Hardware Setup:** : These experiments were run on a Tesla T4 GPU with 16 GB VRAM provided through Google colab session with GPU enabled. The total time for a single experiment with 20% pariticpation is ~20 minutes and 50% participation is ~40 minutes. 
+**Hardware Setup:** These experiments were run on a Tesla T4 GPU with 16 GB VRAM provided through Google colab session with GPU enabled. The total time for a single experiment with 20% pariticpation is ~20 minutes and 50% participation is ~40 minutes. 
 
-**Contributors:** : [Kireeti](kir-7)
+**Contributors:** [Kireeti](kir-7)
 
 ## Experimental Setup
 
-**Task:** : Image classification
+**Task:** Image classification
 
-**Model:** : The default CNN model is used for all experiments (see `model.py   `).
+**Model:** The default CNN model is used for all experiments (see `model.py`).
 
-**Dataset:** : This baseline includes CIFAR-10 dataset. It will be partitioned into 40 clients following a pathological split where each client has examples of three (out of ten) class labels. The settings are as follows:
+**Dataset:** This baseline includes CIFAR-10 dataset. It will be partitioned into 40 clients following a pathological split where each client has examples of three (out of ten) class labels. The settings are as follows:
 
 | Dataset | #classes | #rounds | #partitions |     partitioning method     |  partition settings  |
 | :------ | :------: | :-----: | :---------: | :-------------------------: | :------------------: |
