@@ -19,7 +19,7 @@ def combine_aggregated_arrays(
     return ArrayRecord({k: Array(v) for k, v in result_np.items()})
 
 
-def get_startegy(context: Context):
+def get_strategy(context: Context):
     """Determine the strategy from the run-config."""
     fraction_train: float = float(context.run_config["fraction-train"])
     algorithm = context.run_config["algorithm"]

@@ -8,7 +8,7 @@ from flwr.app import ArrayRecord, Context
 from flwr.serverapp import Grid, ServerApp
 
 from fedamp.model import FashionNet, Net
-from fedamp.utils import get_startegy
+from fedamp.utils import get_strategy
 
 # Create ServerApp
 app = ServerApp()
@@ -33,7 +33,7 @@ def main(grid: Grid, context: Context) -> None:
     run_configurations = "\n".join(f"{k}: {v}" for k, v in context.run_config.items())
     print(f"Run Configuration:\n{run_configurations}")
 
-    strategy = get_startegy(context=context)
+    strategy = get_strategy(context=context)
 
     # Start strategy, run FedAMP for `num_rounds`
     result = strategy.start(
@@ -71,7 +71,7 @@ def main(grid: Grid, context: Context) -> None:
     os.makedirs(context.run_config["save-dir"], exist_ok=True)
 
     with open(
-        f"{context.run_config['save-dir']}/{context.run_config['algorithm']}_m_{fraction_train}.json",
+        f"{context.run_config['save-dir']}_{dataset}/{context.run_config['algorithm']}_m_{fraction_train}.json",
         "w",
     ) as f:
         json.dump(history, f, indent=4)

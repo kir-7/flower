@@ -24,9 +24,9 @@ dataset: [cifar10, fashion mnist]
 
 **Datasets:** CIFAR-10, Fashion MNIST
 
-**Hardware Setup:** These experiments were run on a Tesla T4 GPU with 16 GB VRAM provided through Google colab session with GPU enabled. The total time for a single fedamp experiment with 20% pariticpation is ~20 minutes and 50% participation is ~60 minutes. 
+**Hardware Setup:** These experiments were run on a Tesla T4 GPU with 16 GB VRAM provided through Google colab session with GPU enabled. The total time for a single fedamp experiment with 20% pariticipation is ~20 minutes and 50% participation is ~60 minutes. 
 
-**Contributors:** [Kireeti](kir-7)
+**Contributors:** [Kireeti](https://github.com/kir-7)
 
 ## Experimental Setup
 
@@ -34,7 +34,7 @@ dataset: [cifar10, fashion mnist]
 
 **Model:** The default CNN models is used for all experiments for CIFAR-10 and Fashion MNIST (see `model.py`).
 
-**Dataset:** This baseline includes CIFAR-10 and Fasion MNIST datasets. It will be partitioned into 40 clients following a pathological split where each client has examples of three (out of ten) class labels. The settings are as follows:
+**Dataset:** This baseline includes CIFAR-10 and Fashion MNIST datasets. It will be partitioned into 40 clients following a pathological split where each client has examples of three (out of ten) class labels. The settings are as follows:
 
 | Dataset | #classes | #rounds | #partitions |     partitioning method     |  partition settings  |
 | :------ | :------: | :-----: | :---------: | :-------------------------: | :------------------: |
