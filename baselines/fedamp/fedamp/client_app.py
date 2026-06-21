@@ -7,7 +7,7 @@ from flwr.app import ArrayRecord, Context, Message, MetricRecord, RecordDict
 from flwr.clientapp import ClientApp
 
 from fedamp.dataset import load_data
-from fedamp.model import Net, FashionNet
+from fedamp.model import FashionNet, Net
 from fedamp.model import test as test_fn
 from fedamp.model import train as train_fn
 from fedamp.utils import combine_aggregated_arrays
@@ -20,10 +20,10 @@ app = ClientApp()
 def train(msg: Message, context: Context):
     """Train the model on local data."""
     # Load common variables to all algorithms
-    dataset = context.run_config['dataset'] 
-    if dataset == 'cifar10':
-        model = Net(n_channels=3) 
-    elif dataset == 'fashion':
+    dataset = context.run_config["dataset"]
+    if dataset == "cifar10":
+        model = Net(n_channels=3)
+    elif dataset == "fashion":
         model = FashionNet(n_channels=1)
 
     arrays = msg.content.array_records["arrays"]
@@ -57,9 +57,9 @@ def train(msg: Message, context: Context):
     # for FedAMP: we use 2 models, one that will stay local (model) and the one from
     # aggregated neighbors (aggregated_model)
     if algorithm == "fedamp":
-        if dataset == 'cifar10':
-            global_model = Net(n_channels=3) 
-        elif dataset == 'fashion':
+        if dataset == "cifar10":
+            global_model = Net(n_channels=3)
+        elif dataset == "fashion":
             global_model = FashionNet(n_channels=1)
 
         # for FedAMP: we also recieve the aggregated weights and coef_self;
@@ -105,10 +105,10 @@ def train(msg: Message, context: Context):
 def evaluate(msg: Message, context: Context):
     """Evaluate the model on local data."""
     # Load the model and initialize it with the received weights
-    dataset = context.run_config['dataset'] 
-    if dataset == 'cifar10':
-        model = Net(n_channels=3) 
-    elif dataset == 'fashion':
+    dataset = context.run_config["dataset"]
+    if dataset == "cifar10":
+        model = Net(n_channels=3)
+    elif dataset == "fashion":
         model = FashionNet(n_channels=1)
 
     arrays = msg.content.array_records["arrays"]
@@ -122,14 +122,14 @@ def evaluate(msg: Message, context: Context):
     num_classes_per_partition: int = int(
         context.run_config.get("num-classes-per-partition", 3)
     )
-    batch_size = int(context.run_config['batch-size'])
+    batch_size = int(context.run_config["batch-size"])
     _, valloader = load_data(
-        dataset=dataset, 
-        num_classes_per_partition=num_classes_per_partition, 
-        partition_by=partition_by, 
-        partition_id=partition_id, 
-        num_partitions=num_partitions, 
-        batch_size=batch_size
+        dataset=dataset,
+        num_classes_per_partition=num_classes_per_partition,
+        partition_by=partition_by,
+        partition_id=partition_id,
+        num_partitions=num_partitions,
+        batch_size=batch_size,
     )
 
     # Call the evaluation function
