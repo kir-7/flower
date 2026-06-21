@@ -137,14 +137,14 @@ class FedAMP(FedAvg):
             conf = copy.deepcopy(config)
             # 1st index is the coef_self
             conf["coef_self"] = partial_aggregated_arrays[node_id][1]
-            records[node_id] = RecordDict({
-                
-                self.arrayrecord_key: curr_round_client_arrays[node_id],
-                # 0th index is the array records
-                self.aggregatedrecord_key: partial_aggregated_arrays[node_id][0],
-                self.configrecord_key: conf,
-            })
-            
+            records[node_id] = RecordDict(
+                {
+                    self.arrayrecord_key: curr_round_client_arrays[node_id],
+                    # 0th index is the array records
+                    self.aggregatedrecord_key: partial_aggregated_arrays[node_id][0],
+                    self.configrecord_key: conf,
+                }
+            )
 
         return self._construct_messages(records, node_ids, MessageType.TRAIN)
 
