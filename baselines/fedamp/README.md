@@ -2,7 +2,7 @@
 title: Personalized Cross-Silo Federated Learning on Non-IID Data
 url: https://arxiv.org/abs/2007.03797 
 labels: [data heterogeneity, personalization, image classification] 
-dataset: [cifar10]
+dataset: [cifar10, fashion mnist]
 ---
 
 
@@ -20,11 +20,11 @@ dataset: [cifar10]
 
 ## About this baseline
 
-**What’s implemented:** : The code in this directory implements the algorithm in *Personalized Cross-Silo Federated Learning on Non-IID Data* (Huang et al., 2021) for CIFAR-10 dataset under pathological sampling. It evaluates the performance under fraction-train of 0.2 and 0.5 against FedAvg and FedProx. 
+**What’s implemented:** : The code in this directory implements the algorithm in *Personalized Cross-Silo Federated Learning on Non-IID Data* (Huang et al., 2021) for CIFAR-10 and Fashion MNIST datasets under pathological sampling. It evaluates the performance under fraction-train of 0.2 and 0.5 against FedAvg and FedProx. 
 
-**Datasets:** CIFAR-10
+**Datasets:** CIFAR-10, Fashion MNIST
 
-**Hardware Setup:** These experiments were run on a Tesla T4 GPU with 16 GB VRAM provided through Google colab session with GPU enabled. The total time for a single experiment with 20% pariticpation is ~20 minutes and 50% participation is ~40 minutes. 
+**Hardware Setup:** These experiments were run on a Tesla T4 GPU with 16 GB VRAM provided through Google colab session with GPU enabled. The total time for a single fedamp experiment with 20% pariticpation is ~20 minutes and 50% participation is ~60 minutes. 
 
 **Contributors:** [Kireeti](kir-7)
 
@@ -32,13 +32,14 @@ dataset: [cifar10]
 
 **Task:** Image classification
 
-**Model:** The default CNN model is used for all experiments (see `model.py`).
+**Model:** The default CNN models is used for all experiments for CIFAR-10 and Fashion MNIST (see `model.py`).
 
-**Dataset:** This baseline includes CIFAR-10 dataset. It will be partitioned into 40 clients following a pathological split where each client has examples of three (out of ten) class labels. The settings are as follows:
+**Dataset:** This baseline includes CIFAR-10 and Fasion MNIST datasets. It will be partitioned into 40 clients following a pathological split where each client has examples of three (out of ten) class labels. The settings are as follows:
 
 | Dataset | #classes | #rounds | #partitions |     partitioning method     |  partition settings  |
 | :------ | :------: | :-----: | :---------: | :-------------------------: | :------------------: |
 | CIFAR-10   |    10    |   60   |    40    | pathological | 3 classes per client |
+| Fashion MNIST   |    10    |   60   |    40    | pathological | 3 classes per client |
 
 **Training Hyperparameters:**
 The following table shows the main hyperparameters for this baseline with their default value (i.e. the value used if you run `flwr run .` directly)
@@ -60,14 +61,9 @@ The following table shows the main hyperparameters for this baseline with their 
 
 The following table shows the configurations to be set in `pyproject.toml` for different experiments
 
-|  config.algorithm  | config.fraction-train |   config.num-server-rounds | options.num-supernodes |
-| :--------------------: | :------------------------------: | :----------------------: | :--------------------: |
-|   `fedamp`   |                0.2/0.5                |            60           |          40          |
-| `fedavg` |                0.2/0.5                |            60           |          40       |
-| `fedprox` |                0.2/0.5                |            60           |          40          |
-
-
-## Environment Setup
+| config.dataset |config.algorithm  | config.fraction-train |   config.num-server-rounds | options.num-supernodes |
+|:--------------------: |:--------------------: | :------------------------------: | :----------------------: | :--------------------: |
+| `cifar-10`\ `fashion mnist`                       |  `fedamp`\ `fedavg` \ `fedprox`   |                0.2/0.5                |            60           |          40          |
 
 
 ## Environment Setup
@@ -85,52 +81,50 @@ pip install -e .
 
 ## Running the Experiments
 
-
+Below are the commands to run experiments for CIFAR-10 under different settings. 
 
 ```bash
 # command to run FedAvg experiment with 50% participation.
-flwr run . --run-config "algorithm='fedavg' fraction-train=0.5 batch-size=32 lr=0.01 proximal_mu=0.0 save-dir='fedavg_results/'" --stream
+flwr run . --run-config "algorithm='fedavg' fraction-train=0.5 dataset='cifar10' batch-size=32 lr=0.01 proximal_mu=0.0 save-dir='fedavg_results/'" --stream
 
 # command to run FedAvg experiment with 20% participation.
-flwr run . --run-config "algorithm='fedavg' fraction-train=0.2 batch-size=32 lr=0.01 proximal_mu=0.0 save-dir='fedavg_results/'" --stream
+flwr run . --run-config "algorithm='fedavg' fraction-train=0.2 dataset='cifar10' batch-size=32 lr=0.01 proximal_mu=0.0 save-dir='fedavg_results/'" --stream
 
 
 # command to run FedAMP experiment with 50% participation.
-flwr run . --run-config "algorithm='fedamp' fraction-train=0.5 lr=0.01 batch-size=32 alphaK=1.0 fedamp-lambda=1.0 sigma=1.0 save-dir='fedamp_results/'" --stream
+flwr run . --run-config "algorithm='fedamp' fraction-train=0.5 dataset='cifar10' lr=0.01 batch-size=32 alphaK=1.0 fedamp-lambda=1.0 sigma=1.0 save-dir='fedamp_results/'" --stream
 
 # command to run FedAMP experiment with 20% participation.
-flwr run . --run-config "algorithm='fedamp' fraction-train=0.2 lr=0.01 batch-size=32 alphaK=1.0 fedamp-lambda=1.0 sigma=1.0 save-dir='fedamp_results/'" --stream
+flwr run . --run-config "algorithm='fedamp' fraction-train=0.2 dataset='cifar10' lr=0.01 batch-size=32 alphaK=1.0 fedamp-lambda=1.0 sigma=1.0 save-dir='fedamp_results/'" --stream
 
 
 # command to run FedProx experiment with 50% participation.
-flwr run . --run-config "algorithm='fedprox' fraction-train=0.2 lr=0.01 batch-size=32 proximal_mu=0.6 save-dir='fedprox_results/'" --stream
+flwr run . --run-config "algorithm='fedprox' fraction-train=0.5 dataset='cifar10' lr=0.01 batch-size=32 proximal_mu=0.6 save-dir='fedprox_results/'" --stream
 
 # command to run FedProx experiment with 20% participation.
-flwr run . --run-config "algorithm='fedprox' fraction-train=0.2 lr=0.01 batch-size=32 proximal_mu=0.6 save-dir='fedprox_results/'" --stream
-
-
+flwr run . --run-config "algorithm='fedprox' fraction-train=0.2 dataset='cifar10' lr=0.01 batch-size=32 proximal_mu=0.6 save-dir='fedprox_results/'" --stream
 ```
+ 
+For Fashion MNIST experiments replace the dataset attribute to `fashion`.
+
 
 ## Expected results
 
 After running the above commands, the results should be stored in respective folder (`fedavg_results` / `fedprox_results` / `fedamp_results`) in json format containing training history. These are plotted using utility functions provided in `utils.py`. The plots that would be generated are shown below.
 
-Results for comparison of all three algorithms for fraction-train = 0.2:
+Results for comparison of all three algorithms on **CIFAR-10** for fraction-train = 0.2:
 
-![](_static/frac_train_0_2.png)
+![](_static/cifar10/frac_train_0_2.png)
 
-Results for comparison of all three algorithms for fraction-train = 0.5:
+Results for comparison of all three algorithms on **CIFAR-10** for fraction-train = 0.5:
 
-![](_static/frac_train_0_5.png)
+![](_static/cifar10/frac_train_0_5.png)
 
-Results for FedAMP comparison on fraction-train:
 
-![](_static/fedamp_frac_comp.png)
+Results for comparison of all three algorithms on **Fashion MNIST** for fraction-train = 0.2:
 
-Results for FedAvg comparison on fraction-train:
+![](_static/fashion/frac_train_0_2.png)
 
-![](_static/fedavg_frac_comp.png)
+Results for comparison of all three algorithms on **Fashion MNIST** for fraction-train = 0.5:
 
-Results for FedProx comparison on fraction-train:
-
-![](_static/fedprox_frac_comp.png)
+![](_static/fashion/frac_train_0_5.png)

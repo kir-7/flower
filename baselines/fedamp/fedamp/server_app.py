@@ -7,7 +7,7 @@ import torch
 from flwr.app import ArrayRecord, Context
 from flwr.serverapp import Grid, ServerApp
 
-from fedamp.model import Net
+from fedamp.model import Net, FashionNet
 from fedamp.utils import get_startegy
 
 # Create ServerApp
@@ -22,7 +22,12 @@ def main(grid: Grid, context: Context) -> None:
     fraction_train: float = float(context.run_config["fraction-train"])
 
     # Load global model
-    global_model = Net()
+    dataset = context.run_config['dataset'] 
+    if dataset == 'cifar10':
+        global_model = Net(n_channels=3) 
+    elif dataset == 'fashion':
+        global_model = FashionNet(n_channels=1)
+
     arrays = ArrayRecord(global_model.state_dict())
 
     run_configurations = "\n".join(f"{k}: {v}" for k, v in context.run_config.items())

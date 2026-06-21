@@ -131,6 +131,7 @@ clientapp = "fedamp.client_app:app"
 
 # Custom config values accessible via `context.run_config`
 [tool.flwr.app.config]
+dataset = 'cifar10'
 algorithm = 'fedamp'
 num-server-rounds = 60
 fraction-train = 0.2
