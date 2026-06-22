@@ -3,7 +3,6 @@
 import json
 import os
 
-import torch
 from flwr.app import ArrayRecord, Context
 from flwr.serverapp import Grid, ServerApp
 
@@ -27,6 +26,8 @@ def main(grid: Grid, context: Context) -> None:
         global_model = Net(n_channels=3)
     elif dataset == "fashion":
         global_model = FashionNet(n_channels=1)
+    else:
+        raise ValueError(f"Unsupported dataset: {dataset}")
 
     arrays = ArrayRecord(global_model.state_dict())
 
@@ -42,10 +43,7 @@ def main(grid: Grid, context: Context) -> None:
         num_rounds=num_rounds,
     )
 
-    # Save final model to disk
-    print("\nSaving final model to disk...")
-    state_dict = result.arrays.to_torch_state_dict()
-    torch.save(state_dict, "final_model.pt")
+    # fedamp is PFL algorithm, so there is no global model to save
 
     train_rounds = sorted(result.train_metrics_clientapp.keys())
     train_losses = [
@@ -68,12 +66,12 @@ def main(grid: Grid, context: Context) -> None:
         "eval_losses": eval_losses,
     }
 
-    os.makedirs(context.run_config["save-dir"], exist_ok=True)
+    os.makedirs(f"{context.run_config['save-dir']}", exist_ok=True)
 
     with open(
-        f"{context.run_config['save-dir']}_{dataset}/{context.run_config['algorithm']}_m_{fraction_train}.json",
+        f"{context.run_config['save-dir']}/{context.run_config['algorithm']}_m_{fraction_train}.json",
         "w",
     ) as f:
         json.dump(history, f, indent=4)
 
-    return result
+    return

@@ -53,11 +53,13 @@ def load_data(
             [
                 ToTensor(),
                 Normalize(
-                    (0.286),
-                    (0.353),
+                    (0.286,),
+                    (0.353,),
                 ),
             ]  # mean and std for fashion mnsit
         )
+    else:
+        raise ValueError(f"Unsupported dataset: {dataset}")
 
     if FDS is not None:
         partition = FDS.load_partition(partition_id)

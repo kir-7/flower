@@ -8,7 +8,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "FedAMP"
+name = "fedamp"
 version = "1.0.0"
 description = "FedAMP: Personalized Cross-Silo Federated Learning on Non-IID Data"
 license = "Apache-2.0"

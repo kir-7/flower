@@ -45,10 +45,10 @@ def get_strategy(context: Context):
         strategy = FedProx(
             fraction_train=fraction_train,
             fraction_evaluate=1.0,
-            proximal_mu=context.run_config["proximal_mu"],
+            proximal_mu=float(context.run_config["proximal_mu"]),
         )
     else:
-        raise ValueError(f"algortithm: {algorithm } not supported!")
+        raise ValueError(f"algortithm: '{algorithm}' not supported!")
 
     return strategy
 

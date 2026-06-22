@@ -1,1 +1,1 @@
-"""baseline: A Flower Baseline."""
+"""fedamp: A Flower Baseline."""

@@ -61,6 +61,8 @@ def train(msg: Message, context: Context):
             global_model = Net(n_channels=3)
         elif dataset == "fashion":
             global_model = FashionNet(n_channels=1)
+        else:
+            raise ValueError(f"Unsupported dataset: {dataset}")
 
         # for FedAMP: we also recieve the aggregated weights and coef_self;
         # the aggregatedrecords_key is `mu`
@@ -69,15 +71,23 @@ def train(msg: Message, context: Context):
 
         aggregated_arrays: ArrayRecord = combine_aggregated_arrays(
             partial_aggregated_arrays, arrays, coef_self
-        )  # this will change the aggregated_arrays record inplace
+        )
         global_model.load_state_dict(aggregated_arrays.to_torch_state_dict())
         alphaK = float(context.run_config["alphaK"])
         fedamp_lambda = float(context.run_config["fedamp-lambda"])
         proximal_weight = fedamp_lambda / alphaK
 
-    else:  # this works either for fedavg, fedprox
+    elif algorithm in ("fedavg", "fedprox"):  # this works either for fedavg, fedprox
         global_model = copy.deepcopy(model)
-        proximal_weight = msg.content.config_records.get("proximal_mu", 0.0)
+        # FedProx will send the proximal-mu as part of config
+        if algorithm == "fedprox":
+            proximal_weight = msg.content.config_records.get(
+                "proximal-mu", context.run_config["proximal_mu"]
+            )
+        else:
+            proximal_weight = 0.0
+    else:
+        raise ValueError(f"Unsupported algorithm: {algorithm}")
 
     # Call the training function: use aggregated_model for the regularization term.
     train_loss = train_fn(
@@ -110,6 +120,8 @@ def evaluate(msg: Message, context: Context):
         model = Net(n_channels=3)
     elif dataset == "fashion":
         model = FashionNet(n_channels=1)
+    else:
+        raise ValueError(f"Unsupported dataset: {dataset}")
 
     arrays = msg.content.array_records["arrays"]
     model.load_state_dict(arrays.to_torch_state_dict())
