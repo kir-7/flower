@@ -25,7 +25,9 @@ def train(msg: Message, context: Context):
         model = Net(n_channels=3)
     elif dataset == "fashion":
         model = FashionNet(n_channels=1)
-
+    else:
+         raise ValueError(f"Unsupported dataset: {dataset}")
+         
     arrays = msg.content.array_records["arrays"]
     model.load_state_dict(arrays.to_torch_state_dict())
 

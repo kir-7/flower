@@ -37,6 +37,8 @@ def load_data(
                 dataset="zalando-datasets/fashion_mnist",
                 partitioners={"train": partitioner},
             )
+        else:
+            raise ValueError(f"Unsupported dataset: {dataset}")
 
     if dataset == "cifar10":
         pytorch_transforms = Compose(
